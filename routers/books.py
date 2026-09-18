@@ -56,7 +56,7 @@ def delete_book(
     return {
          "message" : "Book removed successfully"}
 
-@router.put("/{id}")
+@router.put("/{id}", response_model=BookResponse, status_code=200)
 def update_book(
      id :int,
      data : BookUpdate,
@@ -75,9 +75,10 @@ def update_book(
     book.cost = data.cost
 
     db.commit()
-    return {
-        "message" : "Book updated successfully"
-    }
+    return book
+    # return {
+    #     "message" : "Book updated successfully"
+    # }
 
 @router.get("", response_model=list[BookResponse])
 def get_books(name : str | None = None,
