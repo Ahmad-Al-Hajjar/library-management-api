@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-DATABASE_URL = ("mysql+pymysql://root:1234@localhost:3306/Library")
+from config import settings
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(settings.database_url, echo=True)
 
 SessionLocal =sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
@@ -22,8 +22,8 @@ def get_db():
 
 
 
-test_db_url = ("mysql+pymysql://root:1234@localhost:3306/Library_test")
-test_engine = create_engine(test_db_url, echo=True)
+
+test_engine = create_engine(settings.test_database_url, echo=True)
 
 TestingSession = sessionmaker(bind= test_engine, autoflush=False, autocommit=False)
 

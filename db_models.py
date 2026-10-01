@@ -40,7 +40,7 @@ class User(Base):
         index=True
     )
     password :Mapped[str] = mapped_column(
-        String(100)
+        String(255)
     )
     amount :Mapped[float] = mapped_column(
         DECIMAL(10, 2)
@@ -76,9 +76,9 @@ class Borrow(Base):
         DateTime,
         default=lambda: datetime.now() + timedelta(days=5)
     )
-    returned_at: Mapped[datetime] = mapped_column(
+    returned_at: Mapped[datetime | None] = mapped_column(
         DateTime,
-        default=None
+        nullable=True
     )
     user :Mapped["User"] = relationship(
         back_populates="borrows"
@@ -90,7 +90,7 @@ class Borrow(Base):
 class Token(Base):
     __tablename__="tokens"
     access_token :Mapped[str] = mapped_column(
-        String(100),
+        String(200),
         primary_key=True
     ) 
     user_id :Mapped[int] = mapped_column(
