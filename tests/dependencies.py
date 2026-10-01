@@ -1,6 +1,6 @@
 import pytest
 from database import TestingSession
-from db_models import User, Book, Token
+from db_models import User, Book, Token, Borrow
 from sqlalchemy import select
 from security.password import hash_password
 from main import app
@@ -37,6 +37,10 @@ def normal_user_token():
     yield token
 
     db = TestingSession()
+
+    records = db.execute(select(Borrow).where(Borrow.user_id == user_id)).scalars().all()
+    for record in records:
+        db.delete(record)
 
     tokens = db.execute(select(Token).where(Token.user_id == user_id)).scalars().all()
     for token in tokens:
@@ -80,6 +84,10 @@ def admin_user_token():
 
     db = TestingSession()
 
+    records = db.execute(select(Borrow).where(Borrow.user_id == user_id)).scalars().all()
+    for record in records:
+        db.delete(record)
+
     tokens = db.execute(select(Token).where(Token.user_id == user_id)).scalars().all()
     for token in tokens:
         db.delete(token)
@@ -110,6 +118,11 @@ def add_book():
     yield book
 
     db = TestingSession()
+
+    records = db.execute(select(Borrow).where(Borrow.book_id == book_id)).scalars().all()
+    for record in records:
+        db.delete(record)
+
     book = db.get(Book, book_id)
     if book is not None:
         db.delete(book) 

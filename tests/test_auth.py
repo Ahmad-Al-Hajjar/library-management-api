@@ -5,6 +5,7 @@ from db_models import User, Token
 from security.password import hash_password
 from database import TestingSession
 from sqlalchemy import select
+from tests.dependencies import normal_user_token
 client = TestClient(app)
 
 
@@ -35,7 +36,7 @@ def test_add_user():
     for token in tokens:
         db.delete(token)
 
-        user = db.get(User, user_id)
+    user = db.get(User, user_id)
 
     if user is not None:
         db.delete(user)
@@ -66,12 +67,33 @@ def test_login(test_add_user):
     assert response.status_code == 200
 
 
-def test_login_wrong_password(test_add_user):
+def test_login_wrong_password(normal_user_token):
     response = client.post("/auth/login",
                            json={
-                               "user_name" : "t_user",
+                               "user_name" : "normal_user",
                                "password" : "wrongpassword"
                            })
     assert response.status_code == 401
 
+def test_login_user_not_found():
+    response = client.post("/auth/login",
+                           json={
+                               "user_name" : "user_does_not_exist",
+                               "password" : "12345678"
+                           })
+    assert response.status_code == 401
 
+def test_me_without_token():
+    response = client.get("/auth/me")
+
+    assert response.status_code == 401
+
+
+def test_logout(normal_user_token):
+    response = client.delete("/auth/logout",
+                             headers={"Authorization": f"Bearer {normal_user_token.access_token}"})
+    assert response.status_code == 200
+
+    response = client.get("/auth/me",
+                          headers={"Authorization": f"Bearer {normal_user_token.access_token}"})
+    assert response.status_code == 401

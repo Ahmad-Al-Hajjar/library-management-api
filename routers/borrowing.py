@@ -47,7 +47,7 @@ def borrow_book(data : BorrowRequest, db : Session = Depends(get_db), user = Dep
         "message": "you borrowed the book successfully"
     }
 
-@router.post("/return")
+@router.post("/return", status_code=201)
 def return_book(data : ReturnRequest, db : Session = Depends(get_db), user = Depends(get_current_user)):
     try:
         st = (select(Book).where(Book.id == data.book_id).with_for_update())

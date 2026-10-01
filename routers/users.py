@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from database import get_db
 from security.dependencies import get_current_user, get_admin
-from db_models import User  
+from db_models import User, Token
 from security.password import hash_password
 from schemas import(UserRequest,
                     UserResponse)
@@ -24,6 +24,11 @@ def get_user(db : Session =Depends(get_db), c_user = Depends(get_current_user)):
 def delete_user(db : Session =Depends(get_db), c_user = Depends(get_current_user)):
     try:
         user = db.get(User, c_user.id)
+        tokens = db.execute(select(Token).where(Token.user_id == user.id)).scalars().all()
+
+        for token in tokens:
+            db.delete(token)
+
         db.delete(user)  
         db.commit()
     except IntegrityError:
@@ -33,6 +38,7 @@ def delete_user(db : Session =Depends(get_db), c_user = Depends(get_current_user
             detail="user_cannot_be_deleted"
         )
     except Exception:
+        db.rollback()
         raise HTTPException(status_code=500, detail="internal_server_error")
     return "success"
 
